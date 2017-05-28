@@ -444,12 +444,12 @@ Play:
         • 1_11_R1
             - IntEnum(0) - Particle ID (parameters/datas depends on particle, e.g bellow), see all particles; 'http://wiki.vg/Protocol#Particle'
                 * 36 iconcrack_(id)_(data)
-                    - VarIntEnum(0) - ID of item
-                    - VarIntEnum(1) - Data of item
+                    - VarInt(0) - ID of item
+                    - VarInt(1) - Data of item
                 * 38 blockdust_(id)
-                    - VarIntEnum(0) - ID of block
+                    - VarInt(0) - ID of block
                 * 37 blockcrack_(id+(data<<12))
-                    - VarIntEnum() - ID and Data of block, because id and data is combined by pattern; for write/to send (id+(data<<12)), for read/to receive ID = (#VarInt(0) & 0xFFF) DATA = ((byte) (#VarInt(0) >> 12 & 0xF)) e.g; new MaterialData(packet.getVarInt(0) & 0xFFF, (byte) (packet.getVarInt(0) >> 12 & 0xF));
+                    - VarInt(0) - ID and Data of block, because id and data is combined by pattern; for write/to send (id+(data<<12)), for read/to receive ID = (#VarInt(0) & 0xFFF) DATA = ((byte) (#VarInt(0) >> 12 & 0xF)) e.g; new MaterialData(packet.getVarInt(0) & 0xFFF, (byte) (packet.getVarInt(0) >> 12 & 0xF));
             - Boolean(0) - If true, particle distance increases from 256 to 65536 
             - Float(0) - X position of the particle 
             - Float(1) - Y position of the particle 
