@@ -1,0 +1,838 @@
+#Important Note: Most that file based on the site http:wiki.vg/Protocol (thank, for this), but not everything are congruent - little modifications.
+#File was created for plugin LibraryAPIs (ver. 1.0.0-Re) and It uses these datas!
+
+Handshaking:
+    In:
+        SetProtocol: - 0x00
+• 1_11_R1
+            - VarInt(0) - Client protocol version numbers (currently 316 in Minecraft 1.11.2), for more; 'http://wiki.vg/Protocol_version_numbers'
+            - String(0) - Hostname or IP, e.g. localhost or 127.0.0.1, that was used to connect. The Notchian server does not use this information 
+            - Short(0) - Default is 25565. The Notchian server does not use this information.
+            - VarIntEnum(0) - 1; status, 2; login
+Play:
+    In:
+        TeleportAccept: - 0x00
+        • 1_11_R1
+            - VarInt(0) = The ID given by the Player Position And Look packet
+            
+        TabComplete: - 0x01
+        • 1_11_R1
+            - String(0) - All text behind the cursor (e.g. to the left of the cursor in left-to-right languages like English)
+            - Boolean(0) - If true, the server will parse Text as a command even if it doesn't start with a /. Used in the command block GUI.
+            - Boolean(1) - Has position?
+                * true
+                    - Position(0) - The position of the block being looked at. Remember, sent only if Boolean(1) is true! 
+                * false
+                    - -
+                    
+        Chat: - 0x02
+        • 1_11_R1
+            - String(0) - The client sends the raw input!
+            
+        ClientCommand: - 0x03
+        • 1_11_R1
+            - VarInt(0) - 0: Perform respawn, 1: Request stats, 2: Open inventory
+            
+        Settings: - 0x04
+        • 1_11_R1
+            - String(0) - Locale e.g. en_GB
+            - Byte(0) - Client-side render distance, in chunks 
+            - VarIntEnum(0) - 0; enabled, 1; commands only, 2; hidden. See processing chat for more information; 'http://wiki.vg/Chat#Processing_chat'
+            - Boolean(0) - "Colors” multiplayer setting 
+            - Byte(1) - Bit mask, look at table; 'http://wiki.vg/Protocol#Client_Settings'
+            - VarIntEnum(1) - 0; Left, 1; Right
+                
+        Transaction: - 0x05
+        • 1_11_R1
+            - Byte(0) - The ID of the window that the action occurred in 
+            - Byte(1) - Every action that is to be accepted has a unique number. This field corresponds to that number
+            - Short(0) - Whether the action was accepted
+                * 0 - false
+                * 1 - true
+                
+        EnchantItem: - 0x06
+        • 1_11_R1
+            - Byte(0) - The ID of the enchantment table window sent by PacketPlayOutOpenWindow
+            - Byte(1) - The position of the enchantment on the enchantment table window, starting with 0 as the topmost one
+            
+        WindowClick: - 0x07
+        • 1_11_R1
+            - Byte(0) - The ID of the window which was clicked. 0 for player inventory. 
+            - Byte(1) - The button used in the click, see; 'http://wiki.vg/Protocol#Click_Window'
+            - Short(0) - The clicked slot number, see; 'http://wiki.vg/Protocol#Click_Window'
+            - Short(1) - A unique number for the action, implemented by Notchian as a counter, starting at 1. Used by the server to send back a Confirm Transaction (clientbound). 
+            - VarIntEnum(0) - Inventory operation mode, see; 'http://wiki.vg/Protocol#Click_Window'
+            - Slot(0) - The clicked slot. Has to be empty (item ID = -1) for drop mode. 
+            
+        CloseWindow: - 0x08
+        • 1_11_R1
+            - Byte(0) - This is the ID of the window that was closed. 0; player inventory.
+            
+        CustomPayload: - 0x09
+        • 1_11_R1
+            - String(0) - Name of the plugin channel used to send the data 
+            - ByteBuf(0) - Any data, depending on the channel. MC| channels are documented here - 'http://wiki.vg/Plugin_channels'. The length of this array must be inferred from the packet length
+            
+        UseEntity: - 0x0A
+        • 1_11_R1
+            - VarInt(0) - Entity's ID
+            - VarIntEnum(0) - Action
+                * 0 INTERACT (RMB)
+                    - VarIntEnum(1) - Hand used; 0; hand, 1; off hand
+                * 1 ATTACK (LMB)
+                    - -
+                * 2 INTERACT AT (RMB)
+                    - Float(0) - X
+                    - Float(1) - Y
+                    - Float(2) - Z
+                    - VarIntEnum(1) - Hand used; 0; hand, 1; off hand
+                    
+            
+        KeepAlive: - 0x0B
+        • 1_11_R1
+            - VarInt(0) - The server will frequently send out a keep-alive, each containing a random ID. The client must respond with the same packet
+            
+        Position: - 0x0C    
+        • 1_11_R1
+            - Double(0) - Absolute position (X coordinate) 
+            - Double(1) - Absolute feet position, normally Head Y - 1.62 
+            - Double(2) - Absolute position (Z coordinate) 
+            - Byte(0) - Condition
+                * 1 Client is on the ground
+                * 0 Otherwise 
+                
+        PositionLook: - 0x0D
+        • 1_11_R1
+            - Double(0) - Absolute position (X coordinate) 
+            - Double(1) - Absolute feet position, normally Head Y - 1.62 
+            - Double(2) - Absolute position (Z coordinate) 
+            - Float(0) - Yaw, absolute rotation on the X Axis, in degrees
+            - Float(1) - Pitch, absolute rotation on the Y Axis, in degrees 
+            - Byte(0) - Condition
+                * 1 Client is on the ground
+                * 0 Otherwise 
+                
+        Look: - 0x0E
+        • 1_11_R1
+            - Float(0) - Yaw, absolute rotation on the X Axis, in degrees
+            - Float(1) - Pitch, absolute rotation on the Y Axis, in degrees 
+            - Byte(0) - Condition
+                * 1 Client is on the ground
+                * 0 Otherwise 
+                
+        Flying: - 0x0F
+        • 1_11_R1
+            - Byte(0) - Condition
+                * 1 Client is on the ground
+                * 0 Otherwise 
+            
+        VehicleMove: - 0x10
+        • 1_11_R1 
+            - Double(0) - Absolute position (X coordinate) 
+            - Double(1) - Absolute position (Y coordinate) 
+            - Double(2) -Absolute position (Z coordinate) 
+            - Float(0) - Absolute rotation on the vertical axis, in degrees (Yaw)
+            - Float(1) - Absolute rotation on the vertical axis, in degrees (Pitch)
+                
+        BoatMove: - 0x11
+        • 1_11_R1
+            - Boolean(0) - Right paddle turning
+            - Boolean(1) - Left paddle turning 
+            
+        Abilities: - 0x12
+        • 1_11_R1
+            - Byte(0) - Bit mask. 0x08; damage disabled (god mode), 0x04; can fly, 0x02; is flying, 0x01; is Creative 
+            - Float(0) - Flying Speed
+            - Float(1) - Walking Speed
+            
+        BlockDig: - 0x13
+        • 1_11_R1
+            - VarIntEnum(0) - The action the player is taking against the block, just see; 'http://wiki.vg/Protocol#Player_Digging'
+            - Position(0) - Block position 
+            - ByteEnum(0) - The face being hit, just see, again; 'http://wiki.vg/Protocol#Player_Digging'
+            
+        EntityAction: - 0x14
+        • 1_11_R1
+            - VarInt(0) - Player ID 
+            - VarInt(1) - The ID of the action, see; 'http://wiki.vg/Protocol#Entity_Action'
+            - VarIntEnum(0) - Only used by the “start jump with horse” action, in which case it ranges from 0 to 100. In all other cases it is 0
+            
+        SteerVehicle: - 0x15
+        • 1_11_R1
+            - Float(0) - Positive to the left of the player 
+            - Float(1) - Positive forward 
+            - Byte(0) - Bit mask. 0x1; jump, 0x2; unmount 
+            
+        ResourcePackStatus: - 0x16
+        • 1_11_R1
+            - VarIntEnum(0) - 0; successfully loaded, 1; declined, 2; failed download, 3; accepted 
+            
+        HeldItemSlot: - 0x17
+        • 1_11_R1
+            - Short(0) - The slot which the player has selected (0–8)
+            
+        SetCreativeSlot: - 0x18
+        • 1_11_R1
+            - Short(0) - Inventory slot
+            - Short(1) - Clicked Item
+            
+        UpdateSign: - 0x19
+        • 1_11_R1
+            - Position(0) - Coordinates of Sign
+            - String(0) - First line of text in the sign
+            - String(1) - Second line
+            - String(2) - Third line
+            - String(3) - Fourth line
+            
+        ArmAnimation: - 0x1A
+        • 1_11_R1
+            - VarIntEnum(0) - Hand used; the animation; 0; hand, 1; off hand
+            
+        Spectate: - 0x1B
+        • 1_11_R1
+            - UUID(0) - UUID of the player to teleport to (can also be an entity UUID) 
+            
+        BlockPlace: - 0x1C
+        • 1_11_R1
+            - VarIntEnum(0) - The hand from which the block is placed; 0; main hand, 1; off hand 
+            
+        UseItem: - 0x1D
+        • 1_11_R1
+            - Position(0) - Block position 
+            - VarIntEnum(0) - The face on which the block is placed
+            - VarIntEnum(1) - The hand from which the item is used; 0; main hand, 1; off hand 
+            - Float(0) - The position of the crosshair on the block, from 0 to 1 increasing from west to east 
+            - Float(1) - from bottom to top
+            - Float(2) - north to south
+    Out:
+        SpawnEntity:: - 0x00
+        • 1_11_R1
+            - VarInt(0) - EID of the object 
+            - UUID(0) - UUID of Entity
+            - Byte(0) - The type of object, look at entities objects; 'http://wiki.vg/Entities#Objects'
+            - Double(0) - Location of x
+            - Double(1) - Location of y
+            - Double(2) - Location of z
+            - Angle(0) - Pitch
+            - Angle(1) - Yaw
+            - Int(0) - Meaning dependent on the value of the Type field, see Object Data for details; 'http://wiki.vg/Object_Data'
+            - Velocity(0) - Velocity on the X,Y,Z axis 
+            
+        SpawnEntityExperienceOrb:: - 0x01
+        • 1_11_R1
+            - VarInt(0) - EID of ExperienceOrb
+            - Double(0) - Loc of x
+            - Double(1) - Loc of y
+            - Double(2) - Loc of z
+            - Short(0) - The amount of experience this orb will reward once collected
+            
+        SpawnEntityWeather:: - 0x02
+        • 1_11_R1
+            - VarInt(0) - EID of ExperienceOrb
+            - ByteEnum(0) - The weather entity type, currently always 1 for thunderbolt 
+            - Double(0) - Loc of x
+            - Double(1) - Loc of y
+            - Double(2) - Loc of z
+            
+        SpawnEntityLiving: - 0x03
+        • 1_11_R1
+            - VarInt(0) - EID of the object 
+            - UUID(0) - UUID of Entity
+            - VarIntEnum(0) - The type of mob. See; 'http://wiki.vg/Entities#Mobs'
+            - Double(0) - Location of x
+            - Double(1) - Location of y
+            - Double(2) - Location of z
+            - Angle(0) - Pitch
+            - Angle(1) - Yaw
+            - Angle(2) - Head Pitch
+            - Velocity(0) - Velocity on the X,Y,Z axis 
+            - EntityMetadata(0) - Entity Metadata - com.gmail.zahusek.libraryapis.deserialzie.Watcher(Integer index, T valueType) See; 'http://wiki.vg/Entities#Entity'
+        
+        SpawnEntityPainting: - 0x04
+        • 1_11_R1
+            - VarInt(0) - EID of the object 
+            - UUID(0) - UUID of Entity
+            - String(0) - Name of the painting (Max length 13), see list of all paintings; 'http://wiki.vg/Protocol#Spawn_Painting'
+            - Position(0) -  Center coordinates (Calculating the center of an image; given a (width × height) grid of cells, with (0, 0) being the top left corner, the center is (max(0, width / 2 - 1), height / 2). E.g. (1, 0) for a 2×1 painting, or (1, 2) for a 4×4 painting) 
+            - ByteEnum(0) - Direction the painting faces (North = 2, South = 0, West = 1, East = 3)
+        
+        NamedEntitySpawn: - 0x05
+        • 1_11_R1
+            - VarInt(0) - EID of the object 
+            - UUID(0) - UUID of Entity
+            - Double(0) - Location of x
+            - Double(1) - Location of y
+            - Double(2) - Location of z
+            - Angle(0) - Pitch
+            - Angle(1) - Yaw
+            - EntityMetadata(0) - Entity Metadata - com.gmail.zahusek.libraryapis.deserialzie.Watcher(Integer INDEX, T valueTYPE) See; 'http://wiki.vg/Entities#Entity'
+        
+        Animation: - 0x06
+        • 1_11_R1
+            - VarInt(0) - Player ID
+            - Byte(0) - Animation ID (see here; 'http://wiki.vg/Protocol#Animation_.28clientbound.29')
+            
+        Statistic: - 0x07
+        • 1_11_R1
+            - ArrayOfStatistic(0) - List of statistics
+            
+        BlockBreakAnimation: - 0x08
+        • 1_11_R1
+            - VarInt(0) - Entity ID of the entity breaking the block
+            - Position(0) - Location of Block
+            - ByteEnum(0) - Destroy Stage, 0–9 to set it, any other value to remove it
+            
+        TileEntityData: - 0x09
+        • 1_11_R1
+            - Position(0) - Location of object
+            - ByteEnum(0) - The type of update to perform, see; 'http://wiki.vg/Protocol#Update_Block_Entity'
+            - NBTTag(0) - Data to se
+            
+        BlockAction: - 0x0A
+        • 1_11_R1
+            - Position(0) - Block coordinates 
+            - ByteEnum(0) - Action ID, varies depending on block; 'http://wiki.vg/Block_Actions'
+            - ByteEnum(1) - Action Param, varies depending on block; 'http://wiki.vg/Block_Actions'
+            - VarInt(0) - The block type ID for the block, not including metadata/damage value. This must match the block at the given coordinates
+            
+        BlockChange: - 0x0B
+        • 1_11_R1
+            - Position(0) - Block Coordinates
+            - BlockID(0) - Material Data
+            
+        Boss: - 0x0C
+        • 1_11_R1
+            - VarIntEnum(0) - Action 
+                * 0 Add
+                    - Chat(0) - Title
+                    - Float(0) - Health, from 0 to 1. Values greater than 1 do not crash a Notchian client, and start rendering part of a second health bar at around 1.5 
+                    - VarIntEnum(0) - Color ID, see below;
+                    - VarIntEnum(1) - Dividers, see above. Wait, I just kidding, learn all about boss bar; 'http://wiki.vg/Protocol#Boss_Bar'
+                    - Byte(0) - Bit mask. 0x1; should darken sky, 0x2; is dragon bar (used to play end music) 
+                * 1 Remove
+                    - - Removes this boss bar 
+                * 2 Update Health (PCT)
+                    - Float(0) - As above in add action
+                * 3 Update Title
+                    - Chat(0) - As above too
+                * 4 Update Style 
+                    - Here too, as above (just in case; VarIntEnum(0) - color, VarIntEnum(1) - dividers)
+                * 5 Update Flags (PROPERTIES)
+                    - You probably already know
+                    
+        ServerDifficulty: - 0x0D
+        • 1_11_R1
+            - Byte(0) - 0; Peaceful, 1; Easy, 2; Normal, 3; Hard 
+        
+        TabComplete: - 0x0E
+        • 1_11_R1
+            - ArrayOfString(0) - One eligible command, note that each command is sent separately instead of in a single string, hence the need for array
+        
+        Chat: - 0x0F
+        • 1_11_R1
+            - Chat(0) - Limited to 32767 bytes 
+            - Byte(0) - 0; chat (chat box), 1; system message (chat box), 2; game info (above hotbar). 
+        
+        MultiBlockChange: - 0x10
+        • 1_11_R1
+            - ChunkCoord(0) - Chunk coordinates - X and Z
+            - ArrayOfChunkBlock(0) - Blocks on chunk
+            
+        Transaction: - 0x11
+        • 1_11_R1
+            - Byte(0) - The ID of the window that the action occurred in
+            - Short(0) - Every action that is to be accepted has a unique number. This field corresponds to that number
+            - Boolean(0) - Whether the action was accepted
+            
+        CloseWindow: - 0x12
+        • 1_11_R1
+            - Byte(0) - This is the ID of the window that was closed. 0 for inventory
+            
+        OpenWindow: - 0x13
+        • 1_11_R1
+            - Byte(0) - A unique id number for the window to be displayed. Notchian server implementation is a counter, starting at 1
+            - Byte(1) - Number of slots in the window (excluding the number of slots in the player inventory) 
+            - Chat(0) - The title of the window
+            - String(0) - The window type to use for display. See list of inventory types; 'http://wiki.vg/Inventory'
+                * EntityHorse
+                    - Int(0) - EntityHorse's EID. Only sent when Window Type is “EntityHorse”
+            
+        WindowItems: - 0x14
+        • 1_11_R1
+            - Byte(0) - The ID of window which items are being sent for. 0 for player inventory
+            - ArrayOfSlot(0) - Items in container
+            
+        WindowData: - 0x15
+        • 1_11_R1
+            - Byte(0) - A unique id number for the window to be displayed
+            - Short(0) - The property to be updated, see here; 'http://wiki.vg/Protocol#Window_Property'
+            - Short(1) - The new value for the property, see here too; 'http://wiki.vg/Protocol#Window_Property'
+                    
+        SetSlot: - 0x16
+        • 1_11_R1
+            - Byte(0) - The window which is being updated. 0 for player inventory. Note that all known window types include the player inventory. This packet will only be sent for the currently opened window while the player is performing actions, even if it affects the player inventory. After the window is closed, a number of these packets are sent to update the player's inventory window (0)
+            - Short(0) - The slot that should be updated (To set the cursor (the item currently dragged with the mouse), use -1 as Window ID and as Slot.)
+            - Slot(0) - Item to set (null, if you want air as item)
+            
+        SetCooldown: - 0x17
+        • 1_11_R1
+            - VarInt(0) - Numeric ID of the item to apply a cooldown to. Get material from static method Material.getMaterial(int)
+            - VarInt(1) - Number of ticks to apply a cooldown for, or 0 to clear the cooldown
+            
+        CustomPayload: - 0x18
+        • 1_11_R1
+            - String(0) - Name of the plugin channel used to send the data 
+            - ByteBuf(0) - Any data, depending on the channel. MC| channels are documented here - 'http://wiki.vg/Plugin_channels'. The length of this array must be inferred from the packet length
+            
+        CustomSoundEffect: - 0x19
+        • 1_11_R1
+            - String(0) - All sound effect names; org.bukkit.Sound
+            - VarIntEnum(0) - The category that this sound will be played from; org.bukkit.SoundCategory
+            - EffectPosition(0) - X, Y, Z
+            - Float(0) - Volume, 1 is 100%, can be more
+            - Float(1) - Pitch, float between 0.5 and 2.0 by Notchian clients 
+            
+        KickDisconnect: - 0x1A
+        • 1_11_R1
+            - Chat(0) - Displayed to the client when the connection terminates
+            
+        EntityStatus: - 0x1B
+        • 1_11_R1
+            - Int(0) - EID of the object 
+            - ByteEnum(0) - List of speficfied statuses; 'http://wiki.vg/Entities'
+            
+        Explosion: - 0x1C
+        • 1_11_R1
+            - Float(0) - X
+            - Float(1) - Y
+            - Float(2) - Z
+            - Float(3) - Radius (Currently unused in the client)
+            - Float(4) - X velocity of the player being pushed by the explosion 
+            - Float(5) - Y velocity of the player being pushed by the explosion 
+            - Float(6) - Z velocity of the player being pushed by the explosion
+            - ArrayOfBBB(0) - Each vector is offsets of affected blocks (Arrays of X, Y, Z)
+            
+        UnloadChunk: - 0x1D
+        • 1_11_R1
+            - ChunkCoord(0) - Blocks' coordinate divided by 16, rounded down 
+            
+        GameStateChange: - 0x1E
+        • 1_11_R1
+            - Byte(0) - Reason codes; 'http://wiki.vg/Protocol#Change_Game_State'
+            - Float(0) - Depends on Reason, so look one more; 'http://wiki.vg/Protocol#Change_Game_State'
+            
+        KeepAlive: - 0x1F
+        • 1_11_R1
+            - VarInt(0) - The server will frequently send out a keep-alive, each containing a random ID. The client must respond with the same packet. If the client does not respond to them for over 30 seconds, the server kicks the client. Vice versa, if the server does not send any keep-alives for 20 seconds, the client will disconnect and yields a "Timed out" exception
+            
+        MapChunk: - 0x20
+        • 1_11_R1
+            - ChunkCoord(0) - Chunk coordinates - X and Z
+            - Boolean(0) - This is true if the packet represents all chunk sections in this vertical chunk column, where the Primary Bit Mask specifies exactly which chunk sections are included, and which are air
+            - VarInt(0) - Bitmask with bits set to 1 for every 16×16×16 chunk section whose data is included in Data. The least significant bit represents the chunk section at the bottom of the chunk column (from y=0 to y=15)
+            - ArrayOfByte(0) - ('http://wiki.vg/SMP_Map_Format') The length of the array is equal to the number of bits set in Primary Bit Mask. Chunks are sent bottom-to-top, i.e. the first chunk, if sent, extends from Y=0 to Y=15, if Ground-Up Continuous; biome array, byte per XZ coordinate, 256 bytes total. 
+            - ArrayOfNBTTag(0) - All block entities in the chunk. Use the x, y, and z tags in the NBT to determine their positions
+            
+        WorldEvent: - 0x21
+        • 1_11_R1
+            - Int(0) - The ID of the effect, look here; 'http://wiki.vg/Protocol#Effect'
+            - Int(1) - Extra data for certain effects, look again; 'http://wiki.vg/Protocol#Effect'
+            - Position(0) - The location of the effect 
+            - Boolean(0) - By default, the Minecraft client adjusts the volume of sound effects based on distance. Boolean field is used to disable this, and instead the effect is played from 2 blocks away in the correct direction. Currently this is only used for effect 1023 (wither spawn) and effect 1028 (enderdragon death); it is ignored on other effects 
+            
+        WorldParticles: - 0x22
+        • 1_11_R1
+            - IntEnum(0) - Particle ID (parameters/datas depends on particle, e.g bellow), see all particles; 'http://wiki.vg/Protocol#Particle'
+                * 36 iconcrack_(id)_(data)
+                    - VarIntEnum(0) - ID of item
+                    - VarIntEnum(1) - Data of item
+                * 38 blockdust_(id)
+                    - VarIntEnum(0) - ID of block
+                * 37 blockcrack_(id+(data<<12))
+                    - VarIntEnum(0) - ID and Data of block, because id and data is combined by pattern; for write/to send (id+(data<<12)), for read/to receive ID = (#VarInt(0) & 0xFFF) DATA = ((byte) (#VarInt(0) >> 12 & 0xF)) e.g; new MaterialData(packet.getVarInt(0) & 0xFFF, (byte) (packet.getVarInt(0) >> 12 & 0xF));
+            - Boolean(0) - If true, particle distance increases from 256 to 65536 
+            - Float(0) - X position of the particle 
+            - Float(1) - Y position of the particle 
+            - Float(2) - Z position of the particle 
+            - Float(3) - Speed X
+            - Float(4) - Speed Y
+            - Float(5) - Speed Z
+            - Float(6) - Particle Data
+            - Int(0) - Particle Count 
+        
+                
+        Login: - 0x23
+        • 1_11_R1
+            Int(0) - The player's Entity ID (EID) 
+            ByteEnum(0) - 0; Survival, 1; Creative, 2; Adventure, 3; Spectator (Bit 3 (0x8) is the hardcore flag) 
+            ByteEnum(1) - 0; peaceful, 1; easy, 2; normal, 3; hard 
+            ByteEnum(2) - Was once used by the client to draw the player list, but now is ignored 
+            IntEnum(0) - -1: Nether, 0: Overworld, 1: End
+            StringEnum(0) - Level Type; default, flat, largeBiomes, amplified, default_1_1
+            Boolean(0) - If true, a Notchian client shows reduced information on the debug screen. For servers in development, this should almost always be false
+            
+        Map: - 0x24
+        • 1_11_R1
+            - VarInt(0) - The damage value (map ID) of the map being modified 
+            - Byte(0) - From 0 for a fully zoomed-in map (1 block per pixel) to 4 for a fully zoomed-out map (16 blocks per pixel) 
+            - Boolean(0) - Specifies whether the icons are shown 
+            - ArrayOfMapIcon(0) - Array of Type, X, Y and Rotation (all fields are bytes)
+            - Byte(1) - Number of columns updated
+                * columns > 0
+                    - Byte(2) - number of rows updated 
+                    - Byte(3) - x offset of the westernmost column 
+                    - Byte(4) - y offset of the northernmost row 
+                    - ArrayOfByte(0) - just see here; 'http://minecraft.gamepedia.com/Map_item_format'
+            
+        RelEntityMove: - 0x25
+        • 1_11_R1
+            - VarInt(0) - For player entities, either this packet or any move/look packet is sent every game tick. So the meaning of this packet is basically that the entity did not move/look since the last such packet
+            - Short(0) - x
+            - Short(1) - y
+            - Short(2) - z
+            - Boolean(0) - True if the entity is on the ground, false otherwise
+            
+        RelEntityMoveLook: - 0x26
+        • 1_11_R1
+            - VarInt(0) - For player entities, either this packet or any move/look packet is sent every game tick. So the meaning of this packet is basically that the entity did not move/look since the last such packet
+            - Short(0) - x
+            - Short(1) - y
+            - Short(2) - z
+            - Byte(0) - Yaw
+            - Byte(1) - Pitch
+            - Boolean(0) - True if the entity is on the ground, false otherwise
+            
+        EntityLook: - 0x27
+        • 1_11_R1
+            - VarInt(0) - For player entities, either this packet or any move/look packet is sent every game tick. So the meaning of this packet is basically that the entity did not move/look since the last such packet
+            - Byte(0) - Yaw
+            - Byte(1) - Pitch
+            - Boolean(0) - True if the entity is on the ground, false otherwise
+            
+        Entity: - 0x28
+        • 1_11_R1
+            - VarInt(0) - For player entities, either this packet or any move/look packet is sent every game tick. So the meaning of this packet is basically that the entity did not move/look since the last such packet
+            
+        VehicleMove: - 0x29
+        • 1_11_R1
+            - Double(0) - Absolute position (X coordinate) 
+            - Double(1) - Absolute position (Y coordinate) 
+            - Double(2) - Absolute position (Z coordinate) 
+            - Float(0) - Absolute rotation on the vertical axis, in degrees (Yaw)
+            - Float(1) - Absolute rotation on the horizontal axis, in degrees (Pitch)
+            
+        OpenSignEditor: - 0x2A
+        • 1_11_R1
+            - Position(0) - Coordinates of Sign
+            
+        Abilities: - 0x2B
+        • 1_11_R1
+            - Byte(0) - Bit field, see this link; 'http://wiki.vg/Protocol#Player_Abilities_.28clientbound.29'
+            - Float(0) - Flaying speed 
+            - Float(1) - Modifies the field of view, like a speed potion. A Notchian server will use the same value as the movement speed (send in the Entity Properties packet)
+            
+        CombatEvent: - 0x2C
+        • 1_11_R1
+            - VarIntEnum(0) - Action 
+                * 0 Enter Combat 
+                    - -
+                * 1 End Combat
+                    - VarInt(0) - Duration
+                    - Int(0) - Entity ID
+                * 2 Entity Dead
+                    - VarInt(0) - Player ID
+                    - Int(0) - Entity ID
+                    - Chat(0) - Death meassage
+            
+        PlayerInfo: - 0x2D //TODO
+        • 1_11_R1
+            - VarIntEnum(0) - Action
+                * 0 ADD PLAYER
+                    - ArrayOfPlayerInfo(0) - List of Player's Info(UUID - Player's ID, String - Player's username, String[][] - properties, Int - Ping, GameMode - type of game, JsonObject - Displayname)
+                * 1 UPDATE GAMEMODE
+                    - ArrayOfPlayerInfo(0) - (UUID, GameMode)            
+                * 2 UPDATE LATENCY
+                    - ArrayOfPlayerInfo(0) - (UUID, Int)
+                * 3 UPDATE DISPLAY_NAME
+                    - ArrayOfPlayerInfo(0) - (UUID, JsonObject)
+                * 4 REMOVE PLAYER;
+                    - ArrayOfPlayerInfo(0) - (UUID)
+            
+        Position: - 0x2E
+        • 1_11_R1
+            - Double(0) - Absolute or relative position x, depending on Flags 
+            - Double(1) - Absolute or relative position y, depending on Flags 
+            - Double(2) - Absolute or relative position z, depending on Flags
+            - Float(0) -  Absolute or relative rotation on the X axis, in degrees (Yaw)
+            - Float(1) -  Absolute or relative rotation on the Y axis, in degrees (Pitch)
+            - ByteEnum(0) - Bit field, see that; 'http://wiki.vg/Protocol#Player_Position_And_Look_.28clientbound.29'
+            - VarInt(0) - Client should confirm this packet with Teleport Confirm containing the same Teleport ID
+        
+        Bed: - 0x2F
+        • 1_11_R1
+            - VarInt(0) - Sleeping player's EID 
+            - Position(0) - Block location of the head part of the bed 
+            
+        EntityDestroy: - 0x30
+        • 1_11_R1
+            - ArrayOfVarInt(0) - The list of entities of destroy
+            
+        RemoveEntityEffect: - 0x31
+        • 1_11_R1
+            - VarInt(0) - Id of Entity
+            - Byte(0) - See this table; 'http://minecraft.gamepedia.com/Status_effect#List_of_effects'
+            
+        ResourcePackSend: - 0x32
+        • 1_11_R1
+            - String(0) - The URL to the resource pack.
+            - String(1) - A 40 character hexadecimal and lowercase SHA-1 hash of the resource pack file (must be lower case in order to work). If it's not a 40 character hexadecimal string, the client will not use it: hash verification and likely waste bandwidth — but it will still treat it as a unique id
+            
+        Respawn: - 0x33
+        • 1_11_R1
+            - IntEnum(0) - -1; The Nether, 0; The Overworld, 1; The End 
+            - ByteEnum(0) - 0; Peaceful, 1; Easy, 2; Normal, 3; Hard 
+            - ByteEnum(1) - 0; survival, 1; creative, 2; adventure, 3; spectator (The hardcore flag is not included) 
+            - String(0) - Level Type; default, flat, largeBiomes, amplified, default_1_1 
+            
+        EntityHeadRotation: - 0x34
+        • 1_11_R1
+            - VarInt(0) - Entity ID
+            - Angle(0) - Head Yaw
+            
+        WorldBorder: - 0x35
+        • 1_11_R1
+            - VarIntEnum(0) - Action
+                * 0 Set Size
+                    - Double(0) - Length of a single side of the world border, in meters 
+                * 1 Lerp Size 
+                    - Double(0) - Current length of a single side of the world border, in meters 
+                    - Double(1) - Target length of a single side of the world border, in meters  
+                    - VarLong(0) - Number of real-time milliseconds until New Diameter is reached. It appears that Notchian server does not sync world border speed to game ticks, so it gets out of sync with server lag. If the world border is not moving, this is set to 0
+                * 2 Set Center
+                    - Double(0) - X
+                    - Double(1) - Z
+                * 3 Initialize
+                    - Double(0) - X
+                    - Double(1) - Z
+                    - Double(2) - Current length of a single side of the world border, in meters 
+                    - Double(3) - Target length of a single side of the world border, in meters
+                    - VarLong(0) - Number of real-time milliseconds until New Diameter is reached. It appears that Notchian server does not sync world border speed to game ticks, so it gets out of sync with server lag. If the world border is not moving, this is set to 0
+                    - VarInt(0) - Resulting coordinates from a portal teleport are limited to ±value. Usually 29999984
+                    - VarInt(1) - Warning Time in seconds as set by /worldborder warning time
+                    - VarInt(2) - Warning Blocks in meters 
+                * 4 Set Warning Time 
+                    - VarInt(0) - Warning Time in seconds as set by /worldborder warning time
+                * 5 Set Warning Blocks
+                    - VarInt(0) - Warning Blocks in meters 
+                
+        Camera: - 0x36
+        • 1_11_R1
+            - VarInt(0) - ID of the entity to set the client's camera to
+            
+        HeldItemSlot: - 0x37
+        • 1_11_R1
+            - Byte(0) - The slot which the player has selected (0–8) 
+            
+        ScoreboardDisplayObjective: - 0x38
+        • 1_11_R1
+            - ByteEnum(0) - The position of the scoreboard. 0; list, 1; sidebar, 2; below name
+            - String(0) - The unique name for the scoreboard to be displayed
+            
+        EntityMetadata: - 0x39
+        • 1_11_R1
+            - VarInt(0) - EID of the object 
+            - EntityMetadata(0) - Entity Metadata - com.gmail.zahusek.libraryapis.deserialzie.Watcher(Integer index, T valueType) See; 'http://wiki.vg/Entities#Entity'
+        
+        AttachEntity: - 0x3A
+        • 1_11_R1
+            - VarInt(0) - Attached entity's EID 
+            - Int(0) - ID of the entity holding the lead. Set to -1 to detach
+            
+        EntityVelocity: - 0x3B
+        • 1_11_R1
+            - VarInt(0) - Entity ID 
+            - Velocity(0) - Velocity on the X,Y,Z axis 
+            
+        EntityEquipment: - 0x3C
+        • 1_11_R1
+            - VarInt(0) - Entity's EID  
+            - VarIntEnum(0) - Equipment slot; 0; main hand, 1; off hand, 2–5; armor slot (2; boots, 3; leggings, 4; chestplate, 5; helmet) 
+            - Slot(0) - Item to set
+            
+        Experience: - 0x3D
+        • 1_11_R1
+            - Float(0) - Between 0 and 1 
+            - VarInt(0) - Level 
+            - VarInt(1) - See How to leveling up; 'http://minecraft.gamepedia.com/Experience#Leveling_up'
+            
+        UpdateHealth: - 0x3E
+        • 1_11_R1
+            - Float(0) - 0 or less = dead, 20 = full HP 
+            - Float(1) - Seems to vary from 0.0 to 5.0 in integer increments 
+            - VarInt(0) - Food saturation 0–20 (acts as a food “overcharge”. Food values will not decrease while the saturation is over zero. Players logging in automatically get a saturation of 5.0. Eating food increases the saturation as well as the food bar)
+            
+        ScoreboardObjective: - 0x3F
+        • 1_11_R1
+            - String(0) - An unique name for the objective
+            - ByteEnum(0) - Action
+                 * 0 Create
+                    - String(1) - The text to be displayed for the score 
+                    - StringEnum(0) - “integer” or “hearts” 
+                 * 1 Remove
+                 * 2 Update
+                    - String(1) - The text to be displayed for the score 
+                    - StringEnum(0) - “integer” or “hearts” 
+            
+        Mount: - 0x40
+        • 1_11_R1
+            - VarInt(0) - Vehicle's EID 
+            - ArrayOfVarInt(0) - EIDs of entity's passengers 
+            
+        ScoreboardTeam: - 0x41
+        • 1_11_R1
+            - String(0) - A unique name for the team. (Shared with scoreboard)
+            - ByteEnum(0) - Action
+                * 0 Create Team
+                    - String(0) - Display Name 
+                    - String(1) - Prefix, displayed before the names of players that are part of this team
+                    - String(2) - Suffix, displayed after the names of players that are part of this team
+                    - Byte(0) - Friendly Flags, bit mask; 0x01; Allow friendly fire, 0x02; can see invisible players on same team
+                    - Byte(1) - Color, the same Chat colors (0-15). -1 indicates RESET/no color
+                    - StringEnum(0) - Name Tag Visibility (always, hideForOtherTeams, hideForOwnTeam, never)
+                    - StringEnum(1) - Collision Rule (always, pushOtherTeams, pushOwnTeam, never)
+                    - ArrayOfString(0) - Entities, dentifiers for the entities in this team. For players, this is their username; for other entities, it is their UUID
+                * 1 Remove Team
+                    - -
+                * 2 Update Team's info
+                    - String(0) - Display Name 
+                    - String(1) - Prefix, displayed before the names of players that are part of this team
+                    - String(2) - Suffix, displayed after the names of players that are part of this team
+                    - Byte(0) - Friendly Flags, bit mask; 0x01; Allow friendly fire, 0x02; can see invisible players on same team
+                    - Byte(1) - Color, the same Chat colors (0-15). -1 indicates RESET/no color
+                    - StringEnum(0) - Name Tag Visibility (always, hideForOtherTeams, hideForOwnTeam, never)
+                    - StringEnum(1) - Collision Rule (always, pushOtherTeams, pushOwnTeam, never)
+                * 3 Add Players
+                    - ArrayOfString(0) - Entities, dentifiers for the entities in this team. For players, this is their username; for other entities, it is their UUID
+                * 4 Remove Players
+                    - ArrayOfString(0) - Entities, dentifiers for the entities in this team. For players, this is their username; for other entities, it is their UUID
+
+        ScoreboardScore: - 0x42
+        • 1_11_R1
+            - String(0) - The entity whose score this is. For players, this is their username; for other entities, it is their UUID 
+            - String(1) - The name of the objective the score belongs to
+            - ByteEnum(0) - Action
+                * 0 Create/Update
+                    - VarInt(0) - The score to be displayed next to the entry (Only sent when Action does not equal 1)
+                * 1 Remove
+                
+        SpawnPosition: - 0x43
+        • 1_11_R1
+            - Position(0) - Spawn location
+            
+        UpdateTime: - 0x44
+        • 1_11_R1
+            - Long(0) - In ticks; not changed by server commands 
+            - Long(1) - The world (or region) time in ticks (If negative the sun will stop moving at the Math.abs of the time)
+            
+        Title: - 0x45
+        • 1_11_R1
+            - VarIntEnum(0) - Action 
+                * 0 Title
+                * 1 Subtitle
+                * 2 Actionbar (Behaves the same as with position 2 in PacketPlayOutChat)
+                    - Chat(0) - Text of title, subtitle or actionbar
+                * 3 Set times and display
+                    - Int(0) - Ticks to spend fading in 
+                    - Int(1) - Ticks to keep the title displayed 
+                    - Int(2) - Ticks to spend out, not when to start fading out
+                * 4 Hide 
+                    - - makes the title disappear, but if you run times again the same title will appear
+                * 5 Reset
+                    - - erases the text
+        
+        NamedSoundEffect: - 0x46
+        • 1_11_R1
+            - VarInt(0) - ID of hardcoded sound event
+            - VarIntEnum(0) - The category that this sound will be played from; org.bukkit.SoundCategory
+            - EffectPosition(0) - X, Y, Z
+            - Float(0) - Volume, 1 is 100%, can be more
+            - Float(1) - Pitch, float between 0.5 and 2.0 by Notchian clients 
+        
+        PlayerListHeaderFooter: - 0x47
+        • 1_11_R1
+            - Chat(0) - Set header. Send a empty translatable component; '{"translate":""}' to remove
+            - Chat(1) - Same, but applies to footer
+            
+        Collect: - 0x48
+        • 1_11_R1
+            - VarInt(0) - Collected Entity ID
+            - VarInt(1) - Collector Entity ID
+            - VarInt(2) - Pickup Item Count (Seems to be 1 for XP orbs, otherwise the number of items in the stack. )
+            
+        EntityTeleport: - 0x49
+        • 1_11_R1
+            - VarInt(0) - Entity ID 
+            - Double(0) - X
+            - Double(1) - Y
+            - Double(2) - Z
+            - Angle(0) - Yaw
+            - Angle(1) - Pitch
+            - Boolean(0) - On Ground
+            
+        UpdateAttributes: - 0x4A
+        • 1_11_R1
+            - VarInt(0) - Entity ID 
+            - ArrayOfAttribute(0) - List of attributes property (String - key, Double - value, List<AttributeModifier> - attributes)
+            
+        EntityEffect: - 0x4B
+        • 1_11_R1
+            - VarInt(0) - Entity ID
+            - VarInt(1) - Seconds
+            - Byte(0) - Potion Effect ID, see this table; 'http://minecraft.gamepedia.com/Status_effect#List_of_effects'
+            - Byte(1) - Notchian client displays effect level as Amplifier + 
+            - Byte(2) - Bit field, see; 'http://wiki.vg/Protocol#Entity_Effect'
+
+Status:
+    In:
+        Start: - 0x00
+        • 1_11_R1
+            - -
+            
+        Ping: - 0x01
+        • 1_11_R1
+            - Long(0) - May be any number. Notchian clients use a system-dependent time value which is counted in milliseconds
+    Out:
+        ServerInfo: - 0x00
+        • 1_11_R1
+            - Chat(0) - JSON object which has the following format; 'http://wiki.vg/Server_List_Ping#Response'
+
+        Pong: - 0x01
+        • 1_11_R1
+            - Long(0) - Should be the same as sent by the client
+Login:
+    In:
+        Start: - 0x00
+        • 1_11_R1
+            - String(0) - Player's username
+            
+        InEncryptionBegin: - 0x01
+        • 1_11_R1
+            - - No support, for now
+            
+    Out:
+        Disconnect: - 0x00
+        • 1_11_R1
+            - Chat(0) - Reason of disconnect
+            
+        EncryptionBegin: - 0x01
+        • 1_11_R1
+            - - No support, for now
+            
+        Success: - 0x02
+        • 1_11_R1
+            - String(0) - Player's unique Id
+            - String(1) - Player's username
+            
+        SetCompression: - 0x03
+        • 1_11_R1
+            - VarInt(0) - Maximum size of a packet before it is compressed
